@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
@@ -10,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+// ReSharper disable AssignNullToNotNullAttribute
 
 namespace BackpackLogin.API
 {
@@ -23,6 +25,7 @@ namespace BackpackLogin.API
         private string _openidMode;
         private string _openidparams;
         private string _nonce;
+        // ReSharper disable once NotAccessedField.Local
         private string _stackHash;
 
         /// <summary>
@@ -43,7 +46,7 @@ namespace BackpackLogin.API
             SetUserId(responseString);
             var location = PostLogin();
             SetOpenIdParams(location);
-            // Now do Steam Login
+            // Now do Steam Login.
             dynamic steamResult = DoSteamLogin(inpSteamUserName, inpSteamPassword, inpSharedSecret);
             if (steamResult == null) return;
             PostTransfer(steamResult.transfer_parameters.steamid.ToString(),
@@ -55,7 +58,7 @@ namespace BackpackLogin.API
             location = GetBackpackCookies(location);
             if (location == "/" || location == "https://backpack.tf/")
             {
-                // Verify Cookies
+                // Verify Cookies.
                 const string url = "https://backpack.tf/";
                 const string method = "GET";
                 const string host = "backpack.tf";
@@ -181,6 +184,7 @@ namespace BackpackLogin.API
         /// <returns>
         /// The user Id.
         /// </returns>
+        // ReSharper disable once UnusedMethodReturnValue.Local
         private string SetUserId(string inpHtml)
         {
             var userId = Regex.Split(inpHtml, "var userID = \"")[1];
@@ -221,7 +225,7 @@ namespace BackpackLogin.API
             var data = new NameValueCollection { { "x", "56" }, { "y", "18" }, { "return", "bp" } };
             using (var httpResponse = Request(url, method, referer, host, accept, data, false, false))
             {
-                resultString = httpResponse.Headers["Location"].ToString();
+                resultString = httpResponse.Headers["Location"];
             }
             return resultString;
         }
@@ -262,6 +266,9 @@ namespace BackpackLogin.API
         /// <param name="password">
         /// Password of your Steam account
         /// </param>
+        /// <param name="inpSharedSecret">
+        /// Shared Secret of your Steam account. Further explanation here: <see cref="DoLogin"/>.
+        /// </param>
         /// <returns>
         /// A bool if the login was successful or not.
         /// </returns>
@@ -277,7 +284,7 @@ namespace BackpackLogin.API
             var rsaJson = JsonConvert.DeserializeObject<GetRsaKeyBackPack>(response);
 
             // Validate
-            if (!rsaJson.success)
+            if (!rsaJson.Success)
             {
                 return null;
             }
@@ -286,52 +293,55 @@ namespace BackpackLogin.API
             var rsa = new RSACryptoServiceProvider();
             var rsaParameters = new RSAParameters
             {
-                Exponent = HexToByte(rsaJson.publickey_exp),
-                Modulus = HexToByte(rsaJson.publickey_mod)
+                Exponent = HexToByte(rsaJson.PublickeyExp),
+                Modulus = HexToByte(rsaJson.PublickeyMod)
             };
 
             rsa.ImportParameters(rsaParameters);
 
-            byte[] bytePassword = Encoding.ASCII.GetBytes(password);
-            byte[] encodedPassword = rsa.Encrypt(bytePassword, false);
-            string encryptedBase64Password = Convert.ToBase64String(encodedPassword);
+            var bytePassword = Encoding.ASCII.GetBytes(password);
+            var encodedPassword = rsa.Encrypt(bytePassword, false);
+            var encryptedBase64Password = Convert.ToBase64String(encodedPassword);
 
             SteamResultBackPack loginJson = null;
             CookieCollection cookieCollection;
-            string steamGuardText = "";
-            string steamGuardId = "";
+            var steamGuardText = "";
+            var steamGuardId = "";
             do
             {
                 Console.WriteLine("SteamWeb: Logging In...");
 
-                bool captcha = loginJson != null && loginJson.captcha_needed == true;
-                bool steamGuard = loginJson != null && loginJson.emailauth_needed == true;
+                var captcha = loginJson != null && loginJson.CaptchaNeeded;
+                var steamGuard = loginJson != null && loginJson.EmailauthNeeded;
 
-                string time = Uri.EscapeDataString(rsaJson.timestamp);
-                string capGID = "-1";
-                if (loginJson != null && loginJson.captcha_gid != null)
+                var time = Uri.EscapeDataString(rsaJson.Timestamp);
+                var capGid = "-1";
+                if (loginJson?.CaptchaGid != null)
                 {
 
-                    capGID = loginJson == null ? null : Uri.EscapeDataString(loginJson.captcha_gid);
+                    capGid = Uri.EscapeDataString(loginJson.CaptchaGid);
                 }
                 data = new NameValueCollection { { "password", encryptedBase64Password }, { "username", username } };
 
                 // Captcha
-                string capText = "";
+                var capText = "";
                 if (captcha)
                 {
                     Console.WriteLine("SteamWeb: Captcha is needed.");
-                    System.Diagnostics.Process.Start("https://steamcommunity.com/public/captcha.php?gid=" + loginJson.captcha_gid);
+                    System.Diagnostics.Process.Start("https://steamcommunity.com/public/captcha.php?gid=" + loginJson.CaptchaGid);
                     Console.WriteLine("SteamWeb: Type the captcha:");
                     capText = Uri.EscapeDataString(Console.ReadLine());
                 }
 
-                data.Add("captchagid", captcha ? capGID : "");
+                data.Add("captchagid", captcha ? capGid : "");
                 data.Add("captcha_text", captcha ? capText : "");
                 if (inpSharedSecret != "")
                 {
-                    var twoFactorGenerator = new SteamTwoFactorGenerator {SharedSecret = inpSharedSecret};
-                    data.Add("twofactorcode", twoFactorGenerator.GenerateSteamGuardCodeForTime(DateTime.Now));
+                    var twoFactorGenerator = new SteamTwoFactorGenerator
+                    {
+                        SharedSecret = inpSharedSecret
+                    };
+                    data.Add("twofactorcode", twoFactorGenerator.GenerateSteamGuardCodeForTime());
                 }
                 else
                 {
@@ -348,7 +358,7 @@ namespace BackpackLogin.API
                     Console.WriteLine("SteamWeb: SteamGuard is needed.");
                     Console.WriteLine("SteamWeb: Type the code:");
                     steamGuardText = Uri.EscapeDataString(Console.ReadLine());
-                    steamGuardId = loginJson.emailsteamid;
+                    steamGuardId = loginJson.Emailsteamid;
                     data.Add("loginfriendlyname", "machine1");
                 }
                 else
@@ -357,27 +367,28 @@ namespace BackpackLogin.API
                 }
 
                 data.Add("emailauth", steamGuardText);
-                data.Add("emailsteamid", steamGuardId);
+                data.Add("Emailsteamid", steamGuardId);
                 data.Add("donotcache", "1440170894227");
 
                 // SteamGuard end
 
                 data.Add("rsatimestamp", time);
 
-                using (HttpWebResponse webResponse = Request("https://steamcommunity.com/login/dologin/", "POST", referer, host, accept, data, true, false))
+                using (var webResponse = Request("https://steamcommunity.com/login/dologin/", "POST", referer, host, accept, data, true, false))
                 {
-                    using (StreamReader reader = new StreamReader(webResponse.GetResponseStream()))
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    using (var reader = new StreamReader(webResponse.GetResponseStream()))
                     {
-                        string json = reader.ReadToEnd();
+                        var json = reader.ReadToEnd();
                         returnObject = JObject.Parse(json);
                         loginJson = JsonConvert.DeserializeObject<SteamResultBackPack>(json);
                         cookieCollection = webResponse.Cookies;
                     }
                 }
-            } while (loginJson.captcha_needed || loginJson.emailauth_needed);
+            } while (loginJson.CaptchaNeeded || loginJson.EmailauthNeeded);
 
 
-            if (loginJson.success)
+            if (loginJson.Success)
             {
                 foreach (Cookie cookie in cookieCollection)
                 {
@@ -385,11 +396,8 @@ namespace BackpackLogin.API
                 }
                 return returnObject;
             }
-            else
-            {
-                Console.WriteLine("SteamWeb Error: " + loginJson.message);
-                return null;
-            }
+            Console.WriteLine("SteamWeb Error: " + loginJson.Message);
+            return null;
         }
 
         /// <summary>
@@ -401,15 +409,15 @@ namespace BackpackLogin.API
         /// <returns>
         /// Hex Value as Byte[].
         /// </returns>
-        private byte[] HexToByte(string hex)
+        private static byte[] HexToByte(string hex)
         {
             if (hex.Length % 2 == 1)
                 throw new Exception("The binary key cannot have an odd number of digits");
 
-            byte[] arr = new byte[hex.Length >> 1];
-            int l = hex.Length;
+            var arr = new byte[hex.Length >> 1];
+            var l = hex.Length;
 
-            for (int i = 0; i < (l >> 1); ++i)
+            for (var i = 0; i < (l >> 1); ++i)
             {
                 arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
             }
@@ -426,7 +434,7 @@ namespace BackpackLogin.API
         /// <returns>
         /// An int.
         /// </returns>
-        private int GetHexVal(char hex)
+        private static int GetHexVal(char hex)
         {
             var val = (int)hex;
             return val - (val < 58 ? 48 : 55);
@@ -489,7 +497,7 @@ namespace BackpackLogin.API
             };
             using (var httpResponse = Request(url, "POST", referer, host, accept, data, false, false))
             {
-                resultString = httpResponse.Headers["Location"].ToString();
+                resultString = httpResponse.Headers["Location"];
             }
             return resultString;
         }
@@ -511,9 +519,8 @@ namespace BackpackLogin.API
             using (var httpResponse = Request(inpUrl, "GET", "", host, accept, null, false, false))
             {
                 _cookies.Add(httpResponse.Cookies);
-                foreach (var item in httpResponse.Cookies)
+                foreach (var cookieString in from object item in httpResponse.Cookies select item.ToString())
                 {
-                    var cookieString = item.ToString();
                     if (cookieString.Contains("user"))
                     {
                         _stackUser = Regex.Split(cookieString, "=")[1];
@@ -547,6 +554,7 @@ namespace BackpackLogin.API
                 _cookies.Add(response.Cookies);
                 using (var responseStream = response.GetResponseStream())
                 {
+                    if (responseStream == null) return null;
                     using (var reader = new StreamReader(responseStream))
                     {
                         return reader.ReadToEnd();
@@ -602,7 +610,7 @@ namespace BackpackLogin.API
 
             if (inpMethod != "POST") return request.GetResponse() as HttpWebResponse;
             var dataString = (inpNvc == null ? null : string.Join("&", Array.ConvertAll(inpNvc.AllKeys, key =>
-                string.Format("{0}={1}", HttpUtility.UrlEncode(key), HttpUtility.UrlEncode(inpNvc[key]))
+                $"{HttpUtility.UrlEncode(key)}={HttpUtility.UrlEncode(inpNvc[key])}"
                 )));
             if (dataString == null) return request.GetResponse() as HttpWebResponse;
             var dataBytes = Encoding.UTF8.GetBytes(dataString);
@@ -624,13 +632,13 @@ namespace BackpackLogin.API
         /// <returns>
         /// The cookie container.
         /// </returns>
-        private CookieContainer ReadCookiesFromDisk(string file)
+        private static CookieContainer ReadCookiesFromDisk(string file)
         {
             try
             {
                 using (Stream stream = File.Open(file, FileMode.Open))
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
+                    var formatter = new BinaryFormatter();
                     return (CookieContainer)formatter.Deserialize(stream);
                 }
             }
@@ -650,13 +658,13 @@ namespace BackpackLogin.API
         /// <param name="cookieJar">
         /// CookieContainer which should be written into the text.
         /// </param>
-        private void WriteCookiesToDisk(string file, CookieContainer cookieJar)
+        private static void WriteCookiesToDisk(string file, CookieContainer cookieJar)
         {
             using (Stream stream = File.Create(file))
             {
                 try
                 {
-                    BinaryFormatter formatter = new BinaryFormatter();
+                    var formatter = new BinaryFormatter();
                     formatter.Serialize(stream, cookieJar);
                 }
                 catch (Exception e)
@@ -672,13 +680,17 @@ namespace BackpackLogin.API
     /// </summary>
     public class GetRsaKeyBackPack
     {
-        public bool success { get; set; }
+        [JsonProperty(PropertyName = "Success")]
+        public bool Success { get; set; }
 
-        public string publickey_mod { get; set; }
+        [JsonProperty(PropertyName = "publickey_mod")]
+        public string PublickeyMod { get; set; }
 
-        public string publickey_exp { get; set; }
+        [JsonProperty(PropertyName = "publickey_exp")]
+        public string PublickeyExp { get; set; }
 
-        public string timestamp { get; set; }
+        [JsonProperty(PropertyName = "timestamp")]
+        public string Timestamp { get; set; }
     }
 
     /// <summary>
@@ -686,17 +698,22 @@ namespace BackpackLogin.API
     /// </summary>
     public class SteamResultBackPack
     {
-        public bool success { get; set; }
+        [JsonProperty(PropertyName = "success")]
+        public bool Success { get; set; }
 
-        public string message { get; set; }
+        [JsonProperty(PropertyName = "message")]
+        public string Message { get; set; }
 
-        public bool captcha_needed { get; set; }
+        [JsonProperty(PropertyName = "captcha_needed")]
+        public bool CaptchaNeeded { get; set; }
 
-        public string captcha_gid { get; set; }
+        [JsonProperty(PropertyName = "captcha_gid")]
+        public string CaptchaGid { get; set; }
 
-        public bool emailauth_needed { get; set; }
+        [JsonProperty(PropertyName = "emailauth_needed")]
+        public bool EmailauthNeeded { get; set; }
 
-        public string emailsteamid { get; set; }
-
+        [JsonProperty(PropertyName = "emailsteamid")]
+        public string Emailsteamid { get; set; }
     }
 }
