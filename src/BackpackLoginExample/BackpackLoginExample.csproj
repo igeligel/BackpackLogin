@@ -3,6 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <RootNamespace>BackpackLoginExample</RootNamespace>
+    <AssemblyName>BackpackLoginExample</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

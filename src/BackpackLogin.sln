@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackpackLogin", "BackpackLogin\BackpackLogin.csproj", "{C6711E46-F3E3-4400-AF40-7B2C194F1035}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackpackLoginConsole", "BackpackLoginConsole\BackpackLoginConsole.csproj", "{BA7CAD64-7F90-4A7C-9E74-1DAC15DC7306}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BackpackLoginExample", "BackpackLoginExample\BackpackLoginExample.csproj", "{BA7CAD64-7F90-4A7C-9E74-1DAC15DC7306}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
