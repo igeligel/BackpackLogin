@@ -1,8 +1,6 @@
 ﻿using System;
 using BackpackLoginExample.Settings;
 using HedgehogSoft.BackpackLogin;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace BackpackLoginExample
 {
