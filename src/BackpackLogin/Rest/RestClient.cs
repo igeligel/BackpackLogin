@@ -103,5 +103,10 @@ namespace HedgehogSoft.BackpackLogin.Rest
             var httpClient = new HttpClient(GetDefaultClientHandler(false));
             return httpClient.PostAsync("http://api.steampowered.com/ITwoFactorService/QueryTime/v1/", null).Result;
         }
+
+        internal CookieContainer GetCookieContainer()
+        {
+            return _cookieContainer;
+        }
     }
 }
