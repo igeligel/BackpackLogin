@@ -95,7 +95,7 @@ This is the basic structure of the OpenId Login via Steam to [Backpack.tf](http:
 
 <h2>Contributors</h2>
 
-
+<table><thead><tr><th align="center"><a href="https://github.com/igeligel"><img src="https://avatars2.githubusercontent.com/u/12736734?v=3" width="100px;" style="max-width:100%;"><br><sub>igeligel</sub></a><br><p>Contributions: 19</p></th></tbody></table>
 
 ## This readme is powered by vue-readme
 
