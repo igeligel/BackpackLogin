@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;using System.Net.Http;
-namespace HedgehogSoft.BackpackLogin.Extensions
+﻿using System.Collections.Generic;
+using System.Net.Http;
+
+namespace HedgehogSoft.BackpackLogin.Extensions
 {
     internal static class HttpClientExtensions
     {

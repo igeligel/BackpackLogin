@@ -34,7 +34,7 @@ namespace HedgehogSoft.BackpackLogin.SteamLogin
         }
 
 
-        public static string DecodeHex(string input)
+        private static string DecodeHex(string input)
         {
             var stringBuilder = new StringBuilder();
             var i = 0;
@@ -52,7 +52,7 @@ namespace HedgehogSoft.BackpackLogin.SteamLogin
             return stringBuilder.ToString();
         }
 
-        public static string EncodeBase64(string input)
+        private static string EncodeBase64(string input)
         {
             var stringBuilder = new StringBuilder();
             var i = 0;
@@ -105,7 +105,7 @@ namespace HedgehogSoft.BackpackLogin.SteamLogin
         /// <param name="data"></param>
         /// <param name="keySize"></param>
         /// <returns></returns>
-        public static BigInteger Pkcs1Pad2(string data, int keySize)
+        private static BigInteger Pkcs1Pad2(string data, int keySize)
         {
             if (keySize < data.Length + 11)
                 return new BigInteger();
@@ -135,7 +135,7 @@ namespace HedgehogSoft.BackpackLogin.SteamLogin
             return new BigInteger(buffer);
         }
 
-        public static BigInteger CreateBigInteger(string hex)
+        private static BigInteger CreateBigInteger(string hex)
         {
             return BigInteger.Parse("00" + hex, NumberStyles.AllowHexSpecifier);
         }
