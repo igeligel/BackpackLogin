@@ -17,6 +17,7 @@
 
 - Includes basic support to login to backpack.tf
 - includes support for signing in via steam</PackageReleaseNotes>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
