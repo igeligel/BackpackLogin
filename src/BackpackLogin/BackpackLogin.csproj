@@ -3,6 +3,20 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.4</TargetFramework>
     <RootNamespace>HedgehogSoft.BackpackLogin</RootNamespace>
+    <Authors>Kevin Peters</Authors>
+    <Company>HedgehogSoft</Company>
+    <Description>A .net core library to handle the login to Backpack.tf. Backpack.tf is a trading site for Team Fortress 2, Counter-Strike: Global Offensive, and Dota 2. Community item pricing, item trading and stats, and much more.</Description>
+    <Copyright>https://github.com/igeligel/BackpackLogin/blob/master/LICENSE.md</Copyright>
+    <PackageLicenseUrl>https://github.com/igeligel/BackpackLogin/blob/master/LICENSE.md</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/igeligel/BackpackLogin</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/igeligel/BackpackLogin</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>teamfortress2, steam, steambot, steamweb, steam-api, crawler, bot, bot-framework</PackageTags>
+    <Version>0.1.0</Version>
+    <PackageReleaseNotes>Initial release as nuget package:
+
+- Includes basic support to login to backpack.tf
+- includes support for signing in via steam</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
