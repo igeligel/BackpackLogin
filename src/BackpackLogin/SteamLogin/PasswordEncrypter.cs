@@ -88,15 +88,10 @@ namespace HedgehogSoft.BackpackLogin.SteamLogin
                 var enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
                 var enc4 = chr3 & 63;
 
-                // ReSharper disable once ConvertIfStatementToSwitchStatement
                 if (x == 1)
-                {
                     enc3 = enc4 = 64;
-                }
                 else if (x == 2)
-                {
                     enc4 = 64;
-                }
 
                 stringBuilder.Append(new[] { Base64[enc1], Base64[enc2], Base64[enc3], Base64[enc4] });
             } while (i < input.Length);

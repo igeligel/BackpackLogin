@@ -17,7 +17,6 @@ namespace BackpackLoginExample
                 ConsoleSettings.Instance["username"],
                 ConsoleSettings.Instance["password"],
                 ConsoleSettings.Instance["sharedSecret"]);
-            Console.WriteLine("Hello World!");
             Console.ReadKey();
         }
     }
